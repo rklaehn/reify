@@ -1,3 +1,4 @@
+
 use std::marker::PhantomData;
 
 pub use reify_derive::*;
@@ -13,9 +14,22 @@ pub enum Fields {
 pub enum Ast2 {
     Struct(Fields),
     Enum(Vec<(&'static str, Fields)>),
-    Array(Vec<Ast2>),
+    Tuple(Vec<Ast2>),
+    Array(Box<Ast2>),
     Scalar(&'static str),
     Unit
+}
+
+impl<A: Reify, B:Reify> Reify for (A, B) {
+    fn ast(_: PhantomData<&Self>) -> Ast2 {
+        Ast2::Tuple(vec![ast::<A>(), ast::<B>()])
+    }
+}
+
+impl<A: Reify> Reify for Vec<A> {
+    fn ast(_: PhantomData<&Self>) -> Ast2 {
+        Ast2::Array(Box::new(ast::<A>()))
+    }
 }
 
 pub trait Reify {

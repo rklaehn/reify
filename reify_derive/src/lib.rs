@@ -62,7 +62,7 @@ fn reify_combine(data: &Data) -> TokenStream {
                     }
                 });
                 quote! {
-                    reify::Ast2::Struct(reify::Fields::Named(vec![#(#recurse, )*]))
+                    reify::Fields::Named(vec![#(#recurse, )*])
                 }
             }
             Fields::Unnamed(ref fields) => {
@@ -74,28 +74,32 @@ fn reify_combine(data: &Data) -> TokenStream {
                     }
                 });
                 quote! {
-                    reify::Ast2::Struct(reify::Fields::Unnamed(vec![#(#recurse, )*]))
+                    reify::Fields::Unnamed(vec![#(#recurse, )*])
                 }
             }
             Fields::Unit => {
-                quote!(reify::Ast2::Struct(reify::Fields::Unit))
+                quote! {
+                    reify::Fields::Unit
+                }
             }
         }
     };
     match *data {
-        Data::Struct(ref data) =>
-            transform_fields(&data.fields),
+        Data::Struct(ref data) => {
+            let fields = transform_fields(&data.fields);
+            quote!(reify::Ast2::Struct(#fields))
+        }
         Data::Enum(ref data) => {
             let for_each_variant = data.variants.iter().map(|f| {
-                let name = format!("{}", f.ident);                
+                let name = format!("{}", f.ident);
+                let fields = transform_fields(&f.fields);
                 quote_spanned! {
-                    f.span() => (#name, reify::Fields::Unit)
+                    f.span() => (#name, #fields)
                 }
             });
             quote! {
                 reify::Ast2::Enum(vec![#(#for_each_variant, )*])
             }
-            // quote!(reify::Ast2::Unit)
         }
         Data::Union(_) => unimplemented!(),
     }
