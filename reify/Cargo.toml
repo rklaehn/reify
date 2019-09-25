@@ -1,0 +1,9 @@
+[package]
+name = "reify"
+version = "0.0.0"
+authors = ["David Tolnay <dtolnay@gmail.com>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+reify_derive = { path = "../reify_derive" }
