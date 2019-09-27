@@ -23,7 +23,7 @@ pub fn derive_reify(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let expanded = quote! {
         // The generated impl.
         impl #impl_generics reify::Reify for #name #ty_generics #where_clause {
-            fn ast(_: std::marker::PhantomData<&Self>) -> reify::Ast2 {
+            fn ast(_: std::marker::PhantomData<&Self>) -> reify::Ast {
                 #sum
             }
         }
@@ -87,7 +87,7 @@ fn reify_combine(data: &Data) -> TokenStream {
     match *data {
         Data::Struct(ref data) => {
             let fields = transform_fields(&data.fields);
-            quote!(reify::Ast2::Struct(#fields))
+            quote!(reify::Ast::Struct(#fields))
         }
         Data::Enum(ref data) => {
             let for_each_variant = data.variants.iter().map(|f| {
@@ -98,7 +98,7 @@ fn reify_combine(data: &Data) -> TokenStream {
                 }
             });
             quote! {
-                reify::Ast2::Enum(vec![#(#for_each_variant, )*])
+                reify::Ast::Enum(vec![#(#for_each_variant, )*])
             }
         }
         Data::Union(_) => unimplemented!(),

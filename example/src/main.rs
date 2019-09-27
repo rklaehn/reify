@@ -8,7 +8,7 @@ struct Sub1(u8, String);
 enum Sub2 {
     A(u8),
     B { x: u8 },
-    C
+    C,
 }
 
 #[derive(Reify)]
