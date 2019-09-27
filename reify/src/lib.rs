@@ -1,4 +1,3 @@
-
 use std::marker::PhantomData;
 
 pub use reify_derive::*;
@@ -20,11 +19,25 @@ pub enum Ast2 {
     Unit
 }
 
-impl<A: Reify, B:Reify> Reify for (A, B) {
-    fn ast(_: PhantomData<&Self>) -> Ast2 {
-        Ast2::Tuple(vec![ast::<A>(), ast::<B>()])
-    }
+macro_rules! tuple_impls {
+    ( $head:ident, $( $tail:ident, )* ) => {
+        impl<$head, $( $tail ),*> Reify for ($head, $( $tail ),*)
+        where
+            $head: Reify,
+            $( $tail: Reify ),*
+        {
+            fn ast(_: PhantomData<&Self>) -> Ast2 {
+                Ast2::Tuple(vec![ast::<$head>(), $( ast::<$tail>(), )*])
+            }
+        }
+
+        tuple_impls!($( $tail, )*);
+    };
+
+    () => {};
 }
+
+tuple_impls!(A, B, C, D, E, F, G, H, I, J,);
 
 impl<A: Reify> Reify for Vec<A> {
     fn ast(_: PhantomData<&Self>) -> Ast2 {
